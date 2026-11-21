@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Reportes')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('reportes')}"></nav>
+
+<main class="container pb-5">
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+		<h1 class="h3 mb-0">Reportes</h1>
+	</div>
+	<p class="ayuda">Todos los reportes se pueden filtrar y descargar en CSV para abrirlos en Excel.</p>
+
+	<div class="resumen-alertas">
+		<a class="resumen-tarjeta vencida" th:href="@{/reportes/pendientes}">
+			<strong><i class="bi bi-exclamation-triangle"></i> Vehículos pendientes</strong>
+			<span class="ayuda">Mantenimientos vencidos o próximos, con km y días restantes.</span>
+		</a>
+		<a class="resumen-tarjeta informativa" th:href="@{/reportes/realizados}">
+			<strong><i class="bi bi-check2-square"></i> Mantenimientos realizados</strong>
+			<span class="ayuda">Lo hecho en un período, por localidad, rutina o vehículo.</span>
+		</a>
+		<a class="resumen-tarjeta proxima" th:href="@{/reportes/vencimientos}">
+			<strong><i class="bi bi-calendar-event"></i> Próximos vencimientos</strong>
+			<span class="ayuda">Qué vence en los próximos días o kilómetros.</span>
+		</a>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

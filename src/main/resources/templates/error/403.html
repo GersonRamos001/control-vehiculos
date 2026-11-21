@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sin permiso')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('')}"></nav>
+<main class="container pb-5">
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<h1 class="h3">No tienes permiso para esta sección</h1>
+			<p>Tu rol no incluye esta pantalla. Si la necesitas, pídele a un administrador que ajuste tu rol.</p>
+			<a class="btn btn-success" th:href="@{/vehiculos}"><i class="bi bi-arrow-left"></i> Volver a vehículos</a>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

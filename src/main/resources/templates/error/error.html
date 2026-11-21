@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('')}"></nav>
+<main class="container pb-5">
+	<div class="card shadow-sm">
+		<div class="card-body">
+			<h1 class="h3" th:text="${titulo != null} ? ${titulo} : 'Algo salió mal'">Algo salió mal</h1>
+			<p th:text="${mensaje != null} ? ${mensaje} : 'Ocurrió un error inesperado. Intenta de nuevo.'">Mensaje</p>
+			<a class="btn btn-success" th:href="@{/vehiculos}"><i class="bi bi-arrow-left"></i> Volver a vehículos</a>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

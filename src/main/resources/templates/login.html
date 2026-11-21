@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Iniciar sesión')}"></head>
+<body class="bg-body-tertiary">
+
+<main class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
+	<div class="card shadow-sm w-100" style="max-width: 24rem">
+		<div class="card-body p-4">
+			<div class="text-center mb-4">
+				<i class="bi bi-truck-front fs-1 text-success"></i>
+				<h1 class="h4 mt-2 mb-1">Control de vehículos</h1>
+				<p class="text-body-secondary small mb-0">Inicia sesión para continuar</p>
+			</div>
+
+			<div class="alert alert-danger py-2 small" role="alert" th:if="${param.error}">
+				<i class="bi bi-exclamation-triangle"></i> Usuario o contraseña incorrectos, o la cuenta está desactivada o bloqueada temporalmente.
+			</div>
+			<div class="alert alert-warning py-2 small" role="status" th:if="${param.expirada}">
+				<i class="bi bi-info-circle"></i> Tu sesión se cerró (la terminó un administrador o cambió tu cuenta). Inicia sesión de nuevo.
+			</div>
+			<div class="alert alert-success py-2 small" role="status" th:if="${param.logout}">
+				<i class="bi bi-check-circle"></i> Cerraste sesión.
+			</div>
+
+			<form th:action="@{/login}" method="post">
+				<div class="mb-3">
+					<label for="username" class="form-label">Usuario</label>
+					<input id="username" name="username" type="text" class="form-control" autocomplete="username" autofocus required>
+				</div>
+				<div class="mb-4">
+					<label for="password" class="form-label">Contraseña</label>
+					<input id="password" name="password" type="password" class="form-control" autocomplete="current-password" required>
+				</div>
+				<button type="submit" class="btn btn-success w-100"><i class="bi bi-box-arrow-in-right"></i> Entrar</button>
+			</form>
+		</div>
+	</div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Umbrales de alerta')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('umbrales')}"></nav>
+
+<main class="container pb-5">
+	<th:block th:replace="~{fragments/layout :: mensajes}"></th:block>
+
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3">Umbrales de alerta</h1>
+			<p>
+				Un mantenimiento aparece como <strong>próximo</strong> cuando faltan estos kilómetros o días (o menos), y como
+				<strong>vencido</strong> cuando ya se pasó. Un vehículo queda <strong>pendiente de lectura</strong> si su última
+				lectura de kilometraje es más antigua que los días indicados.
+			</p>
+
+			<form th:action="@{/configuracion/alertas}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<div class="mb-3">
+					<label for="umbralKm" class="form-label">Avisar cuando falten (km) o menos</label>
+					<input id="umbralKm" type="number" class="form-control" min="1" step="1" th:field="*{umbralKm}" th:errorclass="is-invalid" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('umbralKm')}" th:errors="*{umbralKm}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="umbralDias" class="form-label">Avisar cuando falten (días) o menos</label>
+					<input id="umbralDias" type="number" class="form-control" min="1" step="1" th:field="*{umbralDias}" th:errorclass="is-invalid" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('umbralDias')}" th:errors="*{umbralDias}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="diasLecturaPendiente" class="form-label">Lectura pendiente si la última tiene más de (días)</label>
+					<input id="diasLecturaPendiente" type="number" class="form-control" min="1" step="1" th:field="*{diasLecturaPendiente}" th:errorclass="is-invalid" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('diasLecturaPendiente')}" th:errors="*{diasLecturaPendiente}">Error</div>
+				</div>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/alertas}">Ver alertas</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

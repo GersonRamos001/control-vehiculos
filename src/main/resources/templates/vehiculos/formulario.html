@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${edicion} ? 'Editar vehículo' : 'Registrar vehículo')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('vehiculos')}"></nav>
+
+<main class="container pb-5">
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3" th:text="${edicion} ? 'Editar vehículo' : 'Registrar vehículo'">Registrar vehículo</h1>
+
+			<form th:action="@{${accion}}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<input type="hidden" th:field="*{version}">
+
+				<div class="mb-3">
+					<label for="placa" class="form-label">Placa</label>
+					<input id="placa" type="text" class="form-control" th:field="*{placa}" th:errorclass="is-invalid"
+					       maxlength="10" autocomplete="off" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="codigoEquipo" class="form-label">Código de equipo</label>
+					<input id="codigoEquipo" type="text" class="form-control" th:field="*{codigoEquipo}" th:errorclass="is-invalid"
+					       maxlength="30" autocomplete="off" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('codigoEquipo')}" th:errors="*{codigoEquipo}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="localidadId" class="form-label">Localidad</label>
+					<select id="localidadId" class="form-select" th:field="*{localidadId}" th:errorclass="is-invalid" required>
+						<option value="">Selecciona una localidad…</option>
+						<option th:each="l : ${localidades}" th:value="${l.id().valor()}"
+						        th:text="${l.activo()} ? ${l.nombre()} : ${l.nombre() + ' (inactiva)'}">Localidad</option>
+					</select>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('localidadId')}" th:errors="*{localidadId}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="tipoUsoId" class="form-label">Tipo de uso</label>
+					<select id="tipoUsoId" class="form-select" th:field="*{tipoUsoId}" th:errorclass="is-invalid" required>
+						<option value="">Selecciona un tipo de uso…</option>
+						<option th:each="t : ${tiposUso}" th:value="${t.id().valor()}"
+						        th:text="${t.activo()} ? ${t.nombre()} : ${t.nombre() + ' (inactivo)'}">Tipo de uso</option>
+					</select>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('tipoUsoId')}" th:errors="*{tipoUsoId}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="rutinaId" class="form-label">Última rutina de mantenimiento realizada</label>
+					<select id="rutinaId" class="form-select" th:field="*{rutinaId}" th:errorclass="is-invalid">
+						<option value="" th:text="${edicion} ? '(sin cambio)' : 'Sin rutina registrada'">Sin rutina registrada</option>
+						<option th:each="r : ${rutinas}" th:value="${r.id().valor()}"
+						        th:text="${r.activo()} ? ${r.codigo().valor() + ' — ' + r.nombre()} : ${r.codigo().valor() + ' (inactiva)'}">10K</option>
+					</select>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('rutinaId')}" th:errors="*{rutinaId}">Error</div>
+					<div class="form-text">Dato inicial de la ficha: se actualiza solo al registrar mantenimientos del vehículo.</div>
+					<div class="form-text" th:if="${edicion}">Si no eliges una rutina, se conserva la que ya tiene registrada.</div>
+				</div>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/vehiculos}">Cancelar</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

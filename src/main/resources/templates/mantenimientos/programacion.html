@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Programación de mantenimiento')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('mantenimiento')}"></nav>
+
+<main class="container pb-5">
+	<th:block th:replace="~{fragments/layout :: mensajes}"></th:block>
+
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+		<h1 class="h3 mb-0">Programación de mantenimiento</h1>
+	</div>
+	<p class="ayuda">
+		Vehículos activos ordenados por días restantes (los vencidos primero). El próximo mantenimiento se calcula con los
+		<a th:if="${esAdministrador}" th:href="@{/configuracion/parametros}">parámetros de mantenimiento</a><span
+		th:unless="${esAdministrador}">parámetros de mantenimiento</span>.
+	</p>
+
+	<div class="card shadow-sm">
+		<p class="vacio text-center py-5" th:if="${#lists.isEmpty(filas)}">
+			<i class="bi bi-inbox fs-2 d-block mb-2"></i>
+			No hay vehículos activos.
+		</p>
+
+		<div class="table-responsive" th:unless="${#lists.isEmpty(filas)}">
+			<table class="table table-hover align-middle mb-0">
+				<thead class="table-light">
+				<tr>
+					<th>Placa</th>
+					<th>Equipo</th>
+					<th>Localidad</th>
+					<th>Último mantenimiento</th>
+					<th>Próximo km</th>
+					<th>Fecha de referencia</th>
+					<th>Días restantes</th>
+					<th>Km restantes</th>
+					<th th:if="${puedeEscribir}">Acciones</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="f : ${filas}" th:classappend="${f.vencidaPorFecha()} ? 'fila-vencida'">
+					<td><strong th:text="${f.placa()}">ABC-123</strong></td>
+					<td th:text="${f.codigoEquipo()}">EQ-001</td>
+					<td th:text="${f.localidad()}">Localidad</td>
+					<td th:if="${f.sinRegistro()}" colspan="5"><span class="badge text-bg-secondary">Sin mantenimientos registrados</span></td>
+					<td th:unless="${f.sinRegistro()}">
+						<span th:text="${f.ultimaFecha()}">2026-01-01</span><br>
+						<span class="ayuda" th:text="${#numbers.formatInteger(f.ultimoKilometraje(), 1, 'COMMA')} + ' km · ' + ${f.ultimaRutina()}">100,000 km · 10K</span>
+					</td>
+					<td th:unless="${f.sinRegistro()}" th:text="${#numbers.formatInteger(f.proximoKm(), 1, 'COMMA')} + ' km'">110,000 km</td>
+					<td th:unless="${f.sinRegistro()}" th:text="${f.fechaReferencia()}">2026-07-01</td>
+					<td th:unless="${f.sinRegistro()}">
+						<span class="badge text-bg-danger" th:if="${f.vencidaPorFecha()}"
+						      th:text="${'Vencido hace ' + (-f.diasRestantes()) + ' días'}">Vencido</span>
+						<span th:unless="${f.vencidaPorFecha()}" th:text="${f.diasRestantes() + ' días'}">30 días</span>
+					</td>
+					<td th:unless="${f.sinRegistro()}"><a th:if="${puedeEscribir}" th:href="@{/kilometraje/semanal}">Ver</a><span
+					    th:unless="${puedeEscribir}">—</span></td>
+					<td th:if="${puedeEscribir}">
+						<a class="btn btn-sm btn-outline-secondary" th:href="@{/vehiculos/{id}/mantenimientos(id=${f.vehiculoId()})}">Historial</a>
+						<a class="btn btn-sm btn-success" th:href="@{/vehiculos/{id}/mantenimientos/nuevo(id=${f.vehiculoId()})}">Registrar</a>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

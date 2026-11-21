@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Historial de mantenimiento')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('vehiculos')}"></nav>
+
+<main class="container pb-5">
+	<th:block th:replace="~{fragments/layout :: mensajes}"></th:block>
+
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+		<h1 class="h3 mb-0">Mantenimientos de <span th:text="${placa}">ABC-123</span></h1>
+		<div class="d-flex flex-wrap gap-2">
+			<a class="btn btn-outline-secondary" th:href="@{/vehiculos}"><i class="bi bi-arrow-left"></i> Volver a vehículos</a>
+			<a class="btn btn-success" th:if="${activo}" th:href="@{/vehiculos/{id}/mantenimientos/nuevo(id=${vehiculoId})}">
+				<i class="bi bi-plus-lg"></i> Registrar mantenimiento</a>
+		</div>
+	</div>
+
+	<section class="card shadow-sm">
+		<div class="card-body">
+			<h2 class="h5">Próximo mantenimiento</h2>
+			<p class="vacio" th:if="${programacion.sinRegistro()}">
+				Este vehículo aún no tiene mantenimientos registrados, así que no hay programación.
+			</p>
+			<dl class="datos" th:unless="${programacion.sinRegistro()}">
+				<div>
+					<dt>Último mantenimiento</dt>
+					<dd>
+						<span th:text="${programacion.ultimaFecha()}">2026-01-01</span> ·
+						<span th:text="${#numbers.formatInteger(programacion.ultimoKilometraje(), 1, 'COMMA')}">100,000</span> km ·
+						<span th:text="${programacion.ultimaRutina()}">10K</span>
+					</dd>
+				</div>
+				<div>
+					<dt>Próximo kilometraje</dt>
+					<dd><span th:text="${#numbers.formatInteger(programacion.proximoKm(), 1, 'COMMA')}">110,000</span> km</dd>
+				</div>
+				<div>
+					<dt>Fecha de referencia</dt>
+					<dd th:text="${programacion.fechaReferencia()}">2026-07-01</dd>
+				</div>
+				<div>
+					<dt>Días restantes</dt>
+					<dd th:classappend="${programacion.vencidaPorFecha()} ? 'vencido'"
+					    th:text="${programacion.vencidaPorFecha()} ? ${'Vencido hace ' + (-programacion.diasRestantes()) + ' días'} : ${programacion.diasRestantes() + ' días'}">30 días</dd>
+				</div>
+				<div>
+					<dt>Kilómetros restantes</dt>
+					<dd><a th:href="@{/vehiculos/{id}/kilometraje(id=${vehiculoId})}">Ver kilometraje y km restantes</a></dd>
+				</div>
+			</dl>
+		</div>
+	</section>
+
+	<section class="card shadow-sm mt-3">
+		<div class="card-body" th:classappend="${#lists.isEmpty(historial)} ? '' : 'pb-0'">
+			<h2 class="h5 mb-0">Historial</h2>
+			<p class="vacio" th:if="${#lists.isEmpty(historial)}">No hay mantenimientos registrados.</p>
+		</div>
+
+		<div class="table-responsive mt-3" th:unless="${#lists.isEmpty(historial)}">
+			<table class="table table-hover align-middle mb-0">
+				<thead class="table-light">
+				<tr>
+					<th>Fecha</th>
+					<th>Kilometraje</th>
+					<th>Rutina</th>
+					<th>Observaciones</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="m : ${historial}">
+					<td th:text="${m.fecha()}">2026-01-01</td>
+					<td th:text="${#numbers.formatInteger(m.kilometraje(), 1, 'COMMA')} + ' km'">100,000 km</td>
+					<td><strong th:text="${m.rutina()}">10K</strong></td>
+					<td class="texto-largo" th:text="${m.observaciones() != null} ? ${m.observaciones()} : '—'">—</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!-- Lista genérica de catálogos simples (localidades y tipos de uso). Modelo: titulo, seccion, urlNuevo, filas. -->
+<head th:replace="~{fragments/layout :: head(${titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar(${seccion})}"></nav>
+
+<main class="container pb-5">
+	<th:block th:replace="~{fragments/layout :: mensajes}"></th:block>
+
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+		<h1 class="h3 mb-0" th:text="${titulo}">Catálogo</h1>
+		<a class="btn btn-success" th:href="@{${urlNuevo}}"><i class="bi bi-plus-lg"></i> Nuevo</a>
+	</div>
+
+	<div class="card shadow-sm">
+		<p class="vacio text-center py-5" th:if="${#lists.isEmpty(filas)}">
+			<i class="bi bi-inbox fs-2 d-block mb-2"></i>
+			No hay registros todavía.
+		</p>
+
+		<div class="table-responsive" th:unless="${#lists.isEmpty(filas)}">
+			<table class="table table-hover align-middle mb-0">
+				<thead class="table-light">
+				<tr>
+					<th>Código</th>
+					<th>Nombre</th>
+					<th>Estado</th>
+					<th>Acciones</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="f : ${filas}" th:classappend="${!f.activo()} ? 'inactivo'">
+					<td><strong th:text="${f.codigo()}">COD</strong></td>
+					<td th:text="${f.nombre()}">Nombre</td>
+					<td>
+						<span class="badge text-bg-success" th:if="${f.activo()}">Activo</span>
+						<span class="badge text-bg-secondary" th:unless="${f.activo()}">Inactivo</span>
+					</td>
+					<td>
+						<div class="d-flex flex-wrap gap-1">
+							<a class="btn btn-sm btn-outline-secondary" th:href="@{${f.urlEditar()}}"><i class="bi bi-pencil"></i> Editar</a>
+							<form th:action="@{${f.urlCambioEstado()}}" method="post">
+								<button type="submit" class="btn btn-sm"
+								        th:classappend="${f.activo()} ? 'btn-outline-danger' : 'btn-outline-success'"
+								        th:text="${f.activo()} ? 'Desactivar' : 'Activar'">Desactivar</button>
+							</form>
+						</div>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

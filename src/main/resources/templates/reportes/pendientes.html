@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Reporte: vehículos pendientes')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('reportes')}"></nav>
+
+<main class="container pb-5">
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+		<h1 class="h3 mb-0">Reportes</h1>
+		<div class="d-flex flex-wrap gap-2 no-print" th:if="${xlsxUrl != null}">
+			<a class="btn btn-success" th:href="@{${xlsxUrl}}"><i class="bi bi-file-earmark-excel"></i> Descargar Excel</a>
+			<a class="btn btn-outline-secondary" th:href="@{${csvUrl}}"><i class="bi bi-filetype-csv"></i> Descargar CSV</a>
+		</div>
+	</div>
+	<ul th:replace="~{fragments/reportes :: pestanas('pendientes')}"></ul>
+
+	<section class="card shadow-sm">
+		<div class="card-body">
+			<h2 class="h5">Vehículos pendientes de mantenimiento</h2>
+			<form th:action="@{/reportes/pendientes}" th:object="${filtro}" method="get" class="row g-3 align-items-end">
+				<div class="col-12" th:if="${!#lists.isEmpty(#fields.globalErrors()) or #fields.hasErrors('*')}">
+					<div class="alert alert-danger mb-0" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error</div>
+					<div class="alert alert-danger mb-0" role="alert" th:if="${#fields.hasErrors('*')}">Revisa los filtros: alguno no es válido.</div>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="estado" class="form-label">Estado</label>
+					<select id="estado" class="form-select" th:field="*{estado}">
+						<option value="TODOS">Vencidos y próximos</option>
+						<option value="VENCIDOS">Solo vencidos</option>
+						<option value="PROXIMOS">Solo próximos</option>
+					</select>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="localidadId" class="form-label">Localidad</label>
+					<select id="localidadId" class="form-select" th:field="*{localidadId}">
+						<option value="">Todas</option>
+						<option th:each="l : ${localidades}" th:value="${l.id().valor()}" th:text="${l.nombre()}">Localidad</option>
+					</select>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="tipoUsoId" class="form-label">Tipo de uso</label>
+					<select id="tipoUsoId" class="form-select" th:field="*{tipoUsoId}">
+						<option value="">Todos</option>
+						<option th:each="t : ${tiposUso}" th:value="${t.id().valor()}" th:text="${t.nombre()}">Tipo de uso</option>
+					</select>
+				</div>
+				<div class="col-sm-6 col-lg-3 d-flex gap-2">
+					<button type="submit" class="btn btn-success"><i class="bi bi-funnel"></i> Filtrar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/reportes/pendientes}">Limpiar</a>
+				</div>
+			</form>
+		</div>
+	</section>
+
+	<div th:if="${reporte != null}">
+		<div class="resumen-alertas mt-3">
+			<div class="resumen-tarjeta vencida">
+				<span class="resumen-numero" th:text="${reporte.vencidos()}">0</span>
+				<span>Vencidos</span>
+			</div>
+			<div class="resumen-tarjeta proxima">
+				<span class="resumen-numero" th:text="${reporte.proximos()}">0</span>
+				<span>Próximos</span>
+			</div>
+		</div>
+
+		<section class="card shadow-sm">
+			<p class="vacio text-center py-5" th:if="${#lists.isEmpty(reporte.filas())}">
+				<i class="bi bi-inbox fs-2 d-block mb-2"></i>
+				Ningún vehículo cumple estos filtros.
+			</p>
+
+			<div class="card-body pb-0" th:unless="${#lists.isEmpty(reporte.filas())}">
+				<div class="herramientas-tabla">
+					<label class="solo-lectores" for="buscar-pendientes">Buscar en la tabla</label>
+					<input id="buscar-pendientes" type="search" class="buscador-tabla" data-tabla="tabla-pendientes"
+					       placeholder="Buscar en la tabla…" autocomplete="off">
+				</div>
+			</div>
+			<div class="table-responsive" th:unless="${#lists.isEmpty(reporte.filas())}">
+				<table id="tabla-pendientes" class="table table-hover align-middle mb-0 tabla-interactiva">
+					<caption class="solo-lectores">Vehículos con mantenimiento vencido o próximo</caption>
+					<thead class="table-light">
+					<tr>
+						<th scope="col" data-tipo="texto">Vehículo</th>
+						<th scope="col" data-tipo="texto">Tipo de uso</th>
+						<th scope="col" data-tipo="texto">Estado</th>
+						<th scope="col" data-tipo="texto">Motivo</th>
+						<th scope="col" data-tipo="fecha">Último mantenimiento</th>
+						<th scope="col" data-tipo="numero">Próximo km</th>
+						<th scope="col" data-tipo="numero">Km restantes</th>
+						<th scope="col" data-tipo="fecha">Fecha de referencia</th>
+						<th scope="col" th:if="${puedeEscribir}"><span class="solo-lectores">Acciones</span></th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="f : ${reporte.filas()}" th:classappend="${f.vencido()} ? 'fila-vencida'">
+						<td th:attr="data-valor=${f.placa()}">
+							<strong th:text="${f.placa()}">ABC-123</strong><br>
+							<span class="ayuda" th:text="${f.codigoEquipo() + ' · ' + f.localidad()}">EQ-001 · Localidad</span>
+						</td>
+						<td th:text="${f.tipoUso()}">Operativo</td>
+						<td>
+							<span class="badge text-bg-danger" th:if="${f.vencido()}">Vencido</span>
+							<span class="badge text-bg-warning" th:unless="${f.vencido()}">Próximo</span>
+						</td>
+						<td class="texto-largo" th:text="${f.motivo()}">Vencido: ...</td>
+						<td th:attr="data-valor=${f.ultimoMantenimientoFecha()}">
+							<span th:if="${f.ultimoMantenimientoFecha() != null}" th:text="${f.ultimoMantenimientoFecha()}">2026-01-01</span><br>
+							<span class="ayuda" th:if="${f.ultimoMantenimientoKm() != null}"
+							      th:text="${#numbers.formatInteger(f.ultimoMantenimientoKm(), 1, 'COMMA') + ' km'}">100,000 km</span>
+						</td>
+						<td th:attr="data-valor=${f.proximoKm()}"
+						    th:text="${f.proximoKm() != null} ? ${#numbers.formatInteger(f.proximoKm(), 1, 'COMMA') + ' km'} : '—'">110,000 km</td>
+						<td th:attr="data-valor=${f.kmRestantes()}" th:classappend="${f.kmRestantes() != null and f.kmRestantes() < 0} ? 'vencido'"
+						    th:text="${f.kmRestantes() != null} ? ${#numbers.formatInteger(f.kmRestantes(), 1, 'COMMA') + ' km'} : '—'">2,500 km</td>
+						<td th:attr="data-valor=${f.fechaReferencia()}">
+							<span th:if="${f.fechaReferencia() != null}" th:text="${f.fechaReferencia()}">2026-12-01</span>
+							<span th:if="${f.fechaReferencia() == null}">—</span><br>
+							<span class="ayuda" th:if="${f.diasRestantes() != null}"
+							      th:text="${f.diasRestantes() &lt; 0 ? 'hace ' + (-f.diasRestantes()) + (f.diasRestantes() == -1 ? ' día' : ' días') : (f.diasRestantes() == 0 ? 'hoy' : 'en ' + f.diasRestantes() + (f.diasRestantes() == 1 ? ' día' : ' días'))}">en 30 días</span>
+						</td>
+						<td th:if="${puedeEscribir}">
+							<a class="btn btn-sm btn-success" th:href="@{/vehiculos/{id}/mantenimientos/nuevo(id=${f.vehiculoId()})}">
+								<i class="bi bi-wrench-adjustable"></i> Registrar mantenimiento</a>
+						</td>
+					</tr>
+					</tbody>
+					<tfoot>
+					<tr>
+						<td colspan="9">Mostrando <span data-contador-visibles th:text="${#lists.size(reporte.filas())}">0</span> de
+							<span data-contador-total th:text="${#lists.size(reporte.filas())}">0</span> vehículos</td>
+					</tr>
+					</tfoot>
+				</table>
+			</div>
+		</section>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script th:src="@{/js/tablas-interactivas.js}" defer></script>
+</body>
+</html>

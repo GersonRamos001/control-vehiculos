@@ -1,0 +1,43 @@
+/*
+ * Tema visual tomado de la aplicación pharmacy.
+ * Allí se genera en el servidor (TemaCss) a partir de una configuración editable; aquí es la versión fija con sus
+ * valores por defecto: color principal "success" (#198754), secundario "primary" (#0d6efd), barra de navegación de
+ * color, tipografía del sistema, bordes y densidad normales, modo claro.
+ */
+:root, [data-bs-theme=light], [data-bs-theme=dark] {
+	--bs-success: #198754;
+	--bs-success-rgb: 25, 135, 84;
+	--bs-primary: #0d6efd;
+	--bs-primary-rgb: 13, 110, 253;
+}
+
+html { font-size: 16px; }
+
+/* La barra de navegación lleva el color principal */
+.navbar-app { background-color: #198754; }
+
+/* Controles de formulario y menús con el color principal */
+.form-check-input:checked { background-color: #198754; border-color: #198754; }
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+	border-color: #8cbca6;
+	box-shadow: 0 0 0 .25rem rgba(25, 135, 84, .25);
+}
+.dropdown-item.active, .dropdown-item:active { background-color: #198754; color: #fff; }
+
+/* Tablas sin salto de línea; las columnas de texto largo llevan td.texto-largo (mismo criterio que pharmacy) */
+.table td, .table th { white-space: nowrap; }
+.table td.texto-largo { white-space: normal; min-width: 12rem; }
+
+/* Impresión de páginas (reportes): solo el contenido, sin navegación ni controles */
+@media print {
+	.navbar, .breadcrumb, .btn, .no-print, form.card, .alert-dismissible .btn-close { display: none !important; }
+	body { background: #fff !important; font-size: 11px; }
+	main { max-width: none !important; padding: 0 !important; }
+	.card { box-shadow: none !important; border: 0 !important; }
+	.table-responsive { overflow: visible !important; }
+	.table td, .table th { white-space: normal; padding: 2px 4px; }
+	.badge { border: 1px solid #000; color: #000 !important; background: none !important; }
+	a { color: inherit !important; text-decoration: none !important; }
+	thead { display: table-header-group; }
+	tr { break-inside: avoid; }
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Parámetros de mantenimiento')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('parametros')}"></nav>
+
+<main class="container pb-5">
+	<th:block th:replace="~{fragments/layout :: mensajes}"></th:block>
+
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3">Parámetros de mantenimiento</h1>
+			<p>
+				El próximo mantenimiento se calcula sumando estos intervalos al kilometraje y a la fecha del último
+				mantenimiento registrado, sin importar la rutina (10K, 20K o 30K) realizada.
+			</p>
+
+			<form th:action="@{/configuracion/parametros}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<div class="mb-3">
+					<label for="intervaloKm" class="form-label">Próximo mantenimiento cada (km)</label>
+					<input id="intervaloKm" type="number" class="form-control" min="1" step="1" th:field="*{intervaloKm}" th:errorclass="is-invalid" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('intervaloKm')}" th:errors="*{intervaloKm}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="intervaloMeses" class="form-label">Fecha de referencia cada (meses)</label>
+					<input id="intervaloMeses" type="number" class="form-control" min="1" step="1" th:field="*{intervaloMeses}" th:errorclass="is-invalid" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('intervaloMeses')}" th:errors="*{intervaloMeses}">Error</div>
+				</div>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/configuracion/alertas}">Umbrales de alerta</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

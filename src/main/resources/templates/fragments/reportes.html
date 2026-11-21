@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Pestañas entre reportes. Parámetro: reporte activo (pendientes | realizados | vencimientos). -->
+<ul th:fragment="pestanas(activa)" class="nav nav-tabs mb-3">
+	<li class="nav-item"><a class="nav-link" th:classappend="${activa == 'pendientes'} ? 'active'"
+	                        th:href="@{/reportes/pendientes}">Vehículos pendientes</a></li>
+	<li class="nav-item"><a class="nav-link" th:classappend="${activa == 'realizados'} ? 'active'"
+	                        th:href="@{/reportes/realizados}">Mantenimientos realizados</a></li>
+	<li class="nav-item"><a class="nav-link" th:classappend="${activa == 'vencimientos'} ? 'active'"
+	                        th:href="@{/reportes/vencimientos}">Próximos vencimientos</a></li>
+</ul>
+
+</body>
+</html>

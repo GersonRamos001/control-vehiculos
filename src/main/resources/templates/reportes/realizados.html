@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Reporte: mantenimientos realizados')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('reportes')}"></nav>
+
+<main class="container pb-5">
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+		<h1 class="h3 mb-0">Reportes</h1>
+		<div class="d-flex flex-wrap gap-2 no-print" th:if="${xlsxUrl != null}">
+			<a class="btn btn-success" th:href="@{${xlsxUrl}}"><i class="bi bi-file-earmark-excel"></i> Descargar Excel</a>
+			<a class="btn btn-outline-secondary" th:href="@{${csvUrl}}"><i class="bi bi-filetype-csv"></i> Descargar CSV</a>
+		</div>
+	</div>
+	<ul th:replace="~{fragments/reportes :: pestanas('realizados')}"></ul>
+
+	<section class="card shadow-sm">
+		<div class="card-body">
+			<h2 class="h5">Mantenimientos realizados</h2>
+			<form th:action="@{/reportes/realizados}" th:object="${filtro}" method="get" class="row g-3 align-items-end">
+				<div class="col-12" th:if="${!#lists.isEmpty(#fields.globalErrors())}">
+					<div class="alert alert-danger mb-0" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error</div>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="desde" class="form-label">Desde</label>
+					<input id="desde" type="date" class="form-control" th:field="*{desde}" th:errorclass="is-invalid">
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('desde')}" th:errors="*{desde}">Error</div>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="hasta" class="form-label">Hasta</label>
+					<input id="hasta" type="date" class="form-control" th:field="*{hasta}" th:errorclass="is-invalid">
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('hasta')}" th:errors="*{hasta}">Error</div>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="localidadId" class="form-label">Localidad</label>
+					<select id="localidadId" class="form-select" th:field="*{localidadId}">
+						<option value="">Todas</option>
+						<option th:each="l : ${localidades}" th:value="${l.id().valor()}" th:text="${l.nombre()}">Localidad</option>
+					</select>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="rutinaId" class="form-label">Rutina</label>
+					<select id="rutinaId" class="form-select" th:field="*{rutinaId}">
+						<option value="">Todas</option>
+						<option th:each="r : ${rutinas}" th:value="${r.id().valor()}" th:text="${r.codigo().valor()}">10K</option>
+					</select>
+				</div>
+				<div class="col-sm-6 col-lg-3">
+					<label for="placa" class="form-label">Placa (contiene)</label>
+					<input id="placa" type="text" class="form-control" th:field="*{placa}" th:errorclass="is-invalid" maxlength="10" autocomplete="off">
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('placa')}" th:errors="*{placa}">Error</div>
+				</div>
+				<div class="col-sm-6 col-lg-3 d-flex gap-2">
+					<button type="submit" class="btn btn-success"><i class="bi bi-funnel"></i> Filtrar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/reportes/realizados}">Limpiar</a>
+				</div>
+			</form>
+		</div>
+	</section>
+
+	<div th:if="${reporte != null}">
+		<div class="resumen-alertas mt-3">
+			<div class="resumen-tarjeta informativa">
+				<span class="resumen-numero" th:text="${reporte.total()}">0</span>
+				<span th:text="${'mantenimientos entre ' + reporte.rango().desde() + ' y ' + reporte.rango().hasta()}">entre fechas</span>
+			</div>
+		</div>
+
+		<div class="row g-3 mb-3" th:unless="${#lists.isEmpty(reporte.filas())}">
+			<section class="col-md-6">
+				<div class="card shadow-sm h-100">
+					<div class="card-body">
+						<h3 class="h6">Por rutina</h3>
+						<table class="table table-sm mb-0">
+							<caption class="solo-lectores">Mantenimientos por rutina</caption>
+							<tbody>
+							<tr th:each="c : ${reporte.porRutina()}">
+								<th scope="row" th:text="${c.clave()}">10K</th>
+								<td class="text-end" th:text="${c.cantidad()}">3</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+			<section class="col-md-6">
+				<div class="card shadow-sm h-100">
+					<div class="card-body">
+						<h3 class="h6">Por localidad</h3>
+						<table class="table table-sm mb-0">
+							<caption class="solo-lectores">Mantenimientos por localidad</caption>
+							<tbody>
+							<tr th:each="c : ${reporte.porLocalidad()}">
+								<th scope="row" th:text="${c.clave()}">Localidad</th>
+								<td class="text-end" th:text="${c.cantidad()}">3</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<section class="card shadow-sm">
+			<p class="vacio text-center py-5" th:if="${#lists.isEmpty(reporte.filas())}">
+				<i class="bi bi-inbox fs-2 d-block mb-2"></i>
+				No hay mantenimientos con estos filtros.
+			</p>
+
+			<div class="card-body pb-0" th:unless="${#lists.isEmpty(reporte.filas())}">
+				<div class="herramientas-tabla">
+					<label class="solo-lectores" for="buscar-realizados">Buscar en la tabla</label>
+					<input id="buscar-realizados" type="search" class="buscador-tabla" data-tabla="tabla-realizados"
+					       placeholder="Buscar en la tabla…" autocomplete="off">
+				</div>
+			</div>
+			<div class="table-responsive" th:unless="${#lists.isEmpty(reporte.filas())}">
+				<table id="tabla-realizados" class="table table-hover align-middle mb-0 tabla-interactiva">
+					<caption class="solo-lectores">Mantenimientos realizados en el período</caption>
+					<thead class="table-light">
+					<tr>
+						<th scope="col" data-tipo="fecha">Fecha</th>
+						<th scope="col" data-tipo="texto">Vehículo</th>
+						<th scope="col" data-tipo="texto">Localidad</th>
+						<th scope="col" data-tipo="texto">Rutina</th>
+						<th scope="col" data-tipo="numero">Kilometraje</th>
+						<th scope="col" data-tipo="texto">Observaciones</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="f : ${reporte.filas()}">
+						<td th:attr="data-valor=${f.fecha()}" th:text="${f.fecha()}">2026-01-01</td>
+						<td th:attr="data-valor=${f.placa()}">
+							<strong th:text="${f.placa()}">ABC-123</strong><br>
+							<span class="ayuda" th:text="${f.codigoEquipo()}">EQ-001</span>
+						</td>
+						<td th:text="${f.localidad()}">Localidad</td>
+						<td><strong th:text="${f.rutina()}">10K</strong></td>
+						<td th:attr="data-valor=${f.kilometraje()}" th:text="${#numbers.formatInteger(f.kilometraje(), 1, 'COMMA') + ' km'}">100,000 km</td>
+						<td class="texto-largo" th:text="${f.observaciones() != null} ? ${f.observaciones()} : '—'">—</td>
+					</tr>
+					</tbody>
+					<tfoot>
+					<tr>
+						<td colspan="6">Mostrando <span data-contador-visibles th:text="${reporte.total()}">0</span> de
+							<span data-contador-total th:text="${reporte.total()}">0</span> mantenimientos</td>
+					</tr>
+					</tfoot>
+				</table>
+			</div>
+		</section>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script th:src="@{/js/tablas-interactivas.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Base de datos de DESARROLLO. Las credenciales son solo locales; no usar en otros entornos.
+# spring-boot-docker-compose levanta este servicio al arrancar la app y toma host/puerto/credenciales de aquí.
+services:
+  mysql:
+    image: 'mysql:8.4'
+    command:
+      - '--character-set-server=utf8mb4'
+      - '--collation-server=utf8mb4_0900_ai_ci'
+    environment:
+      MYSQL_DATABASE: 'control_vehiculos'
+      MYSQL_USER: 'cv_user'
+      MYSQL_PASSWORD: 'cv_dev_password'
+      MYSQL_ROOT_PASSWORD: 'cv_dev_root_password'
+    ports:
+      # Puerto de host dinámico: evita choques con otros MySQL locales (p. ej. pharmacy-mysql en 3306).
+      - '3306'
+    volumes:
+      - 'mysql_data:/var/lib/mysql'
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  mysql_data:

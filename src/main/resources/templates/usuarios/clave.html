@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Restablecer contraseña')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('usuarios')}"></nav>
+
+<main class="container pb-5">
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3">Restablecer contraseña de <span th:text="${username}">usuario</span></h1>
+			<p>
+				Asigna una contraseña nueva y entrégasela al usuario por un medio seguro. Al guardar se cierran sus sesiones
+				abiertas y se levanta cualquier bloqueo.
+			</p>
+
+			<form th:action="@{${accion}}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<div class="mb-3">
+					<label for="clave" class="form-label">Contraseña nueva</label>
+					<input id="clave" type="password" class="form-control" th:field="*{clave}" th:errorclass="is-invalid"
+					       maxlength="72" autocomplete="new-password" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('clave')}" th:errors="*{clave}">Error</div>
+					<div class="form-text">De 8 a 72 caracteres y distinta del nombre de usuario.</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="confirmacion" class="form-label">Confirmar contraseña</label>
+					<input id="confirmacion" type="password" class="form-control" th:field="*{confirmacion}" th:errorclass="is-invalid"
+					       maxlength="72" autocomplete="new-password" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('confirmacion')}" th:errors="*{confirmacion}">Error</div>
+				</div>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Restablecer</button>
+					<a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

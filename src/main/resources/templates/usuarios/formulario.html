@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('usuarios')}"></nav>
+
+<main class="container pb-5">
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3" th:text="${titulo}">Nuevo usuario</h1>
+
+			<form th:action="@{${accion}}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<input type="hidden" th:field="*{version}" th:if="${edicion}">
+
+				<div class="mb-3">
+					<label for="username" class="form-label">Nombre de usuario</label>
+					<input id="username" type="text" class="form-control" th:field="*{username}" th:errorclass="is-invalid"
+					       maxlength="30" autocomplete="off" th:readonly="${edicion}" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Error</div>
+					<div class="form-text" th:unless="${edicion}">De 3 a 30 caracteres: letras minúsculas, dígitos, punto, guion o guion bajo.</div>
+					<div class="form-text" th:if="${edicion}">El nombre de usuario no se puede cambiar.</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="nombreCompleto" class="form-label">Nombre completo</label>
+					<input id="nombreCompleto" type="text" class="form-control" th:field="*{nombreCompleto}" th:errorclass="is-invalid"
+					       maxlength="100" autocomplete="off" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('nombreCompleto')}" th:errors="*{nombreCompleto}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="rol" class="form-label">Rol</label>
+					<select id="rol" class="form-select" th:field="*{rol}" th:errorclass="is-invalid" required>
+						<option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.etiqueta()}">Operador</option>
+					</select>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('rol')}" th:errors="*{rol}">Error</div>
+				</div>
+
+				<th:block th:unless="${edicion}">
+					<div class="mb-3">
+						<label for="clave" class="form-label">Contraseña</label>
+						<input id="clave" type="password" class="form-control" th:field="*{clave}" th:errorclass="is-invalid"
+						       maxlength="72" autocomplete="new-password" required>
+						<div class="invalid-feedback" th:if="${#fields.hasErrors('clave')}" th:errors="*{clave}">Error</div>
+						<div class="form-text">De 8 a 72 caracteres y distinta del nombre de usuario.</div>
+					</div>
+
+					<div class="mb-3">
+						<label for="confirmacion" class="form-label">Confirmar contraseña</label>
+						<input id="confirmacion" type="password" class="form-control" th:field="*{confirmacion}" th:errorclass="is-invalid"
+						       maxlength="72" autocomplete="new-password" required>
+						<div class="invalid-feedback" th:if="${#fields.hasErrors('confirmacion')}" th:errors="*{confirmacion}">Error</div>
+					</div>
+				</th:block>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

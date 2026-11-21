@@ -1,0 +1,6 @@
+# Perfil de DESARROLLO (activo por defecto). Administrador inicial solo local: se crea en el primer arranque, cuando la
+# tabla de usuarios está vacía. En otros entornos definir APP_SECURITY_USUARIO y APP_SECURITY_PASSWORD para ese primer arranque.
+app:
+  security:
+    usuario: admin
+    password: admin123

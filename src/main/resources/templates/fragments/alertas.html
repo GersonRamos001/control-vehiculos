@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+	Un grupo de alertas de la misma severidad.
+	Parámetros: titulo, alertas (lista de AlertaDetalle), clase (vencida | proxima | informativa).
+-->
+<section th:fragment="grupo(titulo, alertas, clase)" class="card shadow-sm mt-3" th:if="${!#lists.isEmpty(alertas)}">
+	<div class="card-body pb-0">
+		<h2 class="h5">
+			<span th:text="${titulo}">Vencidas</span>
+			<span class="badge ms-1 align-middle"
+			      th:classappend="${clase == 'vencida'} ? 'text-bg-danger' : (${clase == 'proxima'} ? 'text-bg-warning' : 'text-bg-secondary')"
+			      th:text="${#lists.size(alertas)}">1</span>
+		</h2>
+	</div>
+	<div class="table-responsive">
+		<table class="table table-hover align-middle mb-0">
+			<thead class="table-light">
+			<tr>
+				<th>Vehículo</th>
+				<th>Alerta</th>
+				<th>Km restantes</th>
+				<th>Días restantes</th>
+				<th th:if="${puedeEscribir}">Acciones</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr th:each="a : ${alertas}" th:classappend="${clase == 'vencida'} ? 'fila-vencida'">
+				<td>
+					<strong th:text="${a.placa()}">ABC-123</strong><br>
+					<span class="ayuda" th:text="${a.codigoEquipo() + ' · ' + a.localidad()}">EQ-001 · Localidad</span>
+				</td>
+				<td class="texto-largo" th:text="${a.mensaje()}">Vencido: se pasó por 1,200 km</td>
+				<td th:text="${a.kmRestantes() != null} ? ${#numbers.formatInteger(a.kmRestantes(), 1, 'COMMA') + ' km'} : '—'">2,500 km</td>
+				<td th:text="${a.diasRestantes() != null} ? ${a.diasRestantes() + ' días'} : '—'">30 días</td>
+				<td th:if="${puedeEscribir}">
+					<a class="btn btn-sm btn-success" th:href="@{/vehiculos/{id}/mantenimientos/nuevo(id=${a.vehiculoId()})}">
+						<i class="bi bi-wrench-adjustable"></i> Registrar mantenimiento</a>
+					<a class="btn btn-sm btn-outline-secondary" th:href="@{/vehiculos/{id}/kilometraje(id=${a.vehiculoId()})}">Kilometraje</a>
+					<a class="btn btn-sm btn-outline-secondary" th:href="@{/vehiculos/{id}/mantenimientos(id=${a.vehiculoId()})}">Historial</a>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+</section>
+
+</body>
+</html>

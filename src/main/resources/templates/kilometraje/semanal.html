@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Seguimiento semanal de kilometraje')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('kilometraje')}"></nav>
+
+<main class="container pb-5">
+	<th:block th:replace="~{fragments/layout :: mensajes}"></th:block>
+	<div class="alert alert-danger" role="alert" th:if="${resumenParcial}"
+	     th:text="${'Se guardó lo válido (' + resumenParcial + '), pero hay filas con error: corrígelas y vuelve a guardar.'}">Resumen</div>
+
+	<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+		<h1 class="h3 mb-0">Seguimiento semanal de kilometraje</h1>
+		<span class="badge text-bg-warning" th:if="${pendientes > 0}" th:text="${pendientes + ' pendientes de lectura'}">3 pendientes</span>
+	</div>
+	<p class="ayuda">
+		Escribe la lectura actual del odómetro de cada vehículo: se recalculan al instante los km recorridos y los km
+		restantes para el siguiente mantenimiento. Enter pasa a la siguiente fila. Si te equivocas, vuelve a escribir la
+		lectura de la misma fecha y se reemplaza.
+	</p>
+
+	<form th:action="@{/kilometraje/semanal}" th:object="${form}" method="post" id="captura">
+		<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+		<div class="barra-captura">
+			<label for="fecha" class="form-label mb-0">Fecha de la lectura</label>
+			<input id="fecha" type="date" class="form-control w-auto" th:field="*{fecha}" th:errorclass="is-invalid" th:max="${hoy}" required>
+			<span class="text-danger small" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}">Error</span>
+			<span id="resumen-captura" class="ayuda" aria-live="polite">0 filas con datos</span>
+			<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar lecturas</button>
+		</div>
+
+		<section class="card shadow-sm">
+			<p class="vacio text-center py-5" th:if="${#lists.isEmpty(filas)}">
+				<i class="bi bi-inbox fs-2 d-block mb-2"></i>
+				No hay vehículos activos.
+			</p>
+
+			<div class="table-responsive" th:unless="${#lists.isEmpty(filas)}">
+				<table class="table table-hover align-middle mb-0 tabla-captura">
+					<thead class="table-light">
+					<tr>
+						<th>Vehículo</th>
+						<th>Último mantenimiento</th>
+						<th>Próximo km</th>
+						<th>Días restantes</th>
+						<th>Última lectura</th>
+						<th>Lectura nueva (km)</th>
+						<th>Recorridos</th>
+						<th>Km restantes</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="f : ${filas}" th:classappend="${f.pendiente()} ? 'fila-pendiente'"
+					    th:attr="data-vehiculo=${f.vehiculoId()},data-ultima-lectura=${f.ultimaLecturaKm()},data-km-base=${f.kmActual()},data-proximo-km=${f.proximoKm()}">
+						<td>
+							<strong th:text="${f.placa()}">ABC-123</strong><br>
+							<span class="ayuda" th:text="${f.codigoEquipo() + ' · ' + f.localidad()}">EQ-001 · Localidad</span>
+						</td>
+						<td>
+							<span th:if="${f.sinProgramacion()}" class="badge text-bg-secondary">Sin mantenimientos</span>
+							<span th:unless="${f.sinProgramacion()}">
+								<span th:text="${f.ultimoMantenimientoFecha()}">2026-01-01</span><br>
+								<span class="ayuda" th:text="${#numbers.formatInteger(f.ultimoMantenimientoKm(), 1, 'COMMA') + ' km'}">100,000 km</span>
+							</span>
+						</td>
+						<td th:text="${f.proximoKm() != null} ? ${#numbers.formatInteger(f.proximoKm(), 1, 'COMMA') + ' km'} : '—'">110,000 km</td>
+						<td>
+							<span th:if="${f.diasRestantes() == null}">—</span>
+							<span th:if="${f.diasRestantes() != null and f.vencidaPorFecha()}" class="vencido"
+							      th:text="${'Vencido hace ' + (-f.diasRestantes()) + ' días'}">Vencido</span>
+							<span th:if="${f.diasRestantes() != null and !f.vencidaPorFecha()}"
+							      th:text="${f.diasRestantes() + ' días'}">30 días</span>
+						</td>
+						<td>
+							<span th:if="${f.sinLectura()}" class="badge text-bg-warning">Sin lecturas</span>
+							<span th:unless="${f.sinLectura()}">
+								<span th:text="${f.ultimaLecturaFecha()}">2026-01-01</span><br>
+								<span class="ayuda" th:text="${#numbers.formatInteger(f.ultimaLecturaKm(), 1, 'COMMA') + ' km · hace ' + f.diasSinLectura() + ' días'}">100,000 km · hace 3 días</span>
+							</span>
+						</td>
+						<td>
+							<input type="number" min="0" step="1" inputmode="numeric" class="form-control input-km lectura-nueva"
+							       th:field="*{kilometrajes[__${f.vehiculoId()}__]}"
+							       th:attr="aria-label=${'Lectura nueva de ' + f.placa()}">
+							<div class="aviso-fila" aria-live="polite"></div>
+							<div class="text-danger small" th:if="${errores.get(f.vehiculoId()) != null}" th:text="${errores.get(f.vehiculoId())}">Error</div>
+							<div class="text-danger small" th:if="${#fields.hasErrors('kilometrajes[__${f.vehiculoId()}__]')}"
+							     th:errors="*{kilometrajes[__${f.vehiculoId()}__]}">Error</div>
+						</td>
+						<td class="recorridos">—</td>
+						<td class="km-restantes"
+						    th:classappend="${f.vencidaPorKm()} ? 'vencido'"
+						    th:attr="data-vencido-original=${f.vencidaPorKm()},data-texto-original=${f.kmRestantes() != null} ? ${#numbers.formatInteger(f.kmRestantes(), 1, 'COMMA') + ' km'} : '—'"
+						    th:text="${f.kmRestantes() != null} ? ${#numbers.formatInteger(f.kmRestantes(), 1, 'COMMA') + ' km'} : '—'">10,000 km</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</form>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script th:src="@{/js/seguimiento-semanal.js}" defer></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!-- Formulario genérico de catálogos simples. Modelo: titulo, seccion, accion, urlLista, edicion, form. -->
+<head th:replace="~{fragments/layout :: head(${titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar(${seccion})}"></nav>
+
+<main class="container pb-5">
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3" th:text="${titulo}">Catálogo</h1>
+
+			<form th:action="@{${accion}}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<div class="mb-3">
+					<label for="codigo" class="form-label">Código</label>
+					<input id="codigo" type="text" class="form-control" th:field="*{codigo}" th:errorclass="is-invalid"
+					       maxlength="30" autocomplete="off" th:readonly="${edicion}" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('codigo')}" th:errors="*{codigo}">Error</div>
+					<div class="form-text" th:if="${edicion}">El código no se puede cambiar una vez creado.</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="nombre" class="form-label">Nombre</label>
+					<input id="nombre" type="text" class="form-control" th:field="*{nombre}" th:errorclass="is-invalid"
+					       maxlength="100" autocomplete="off" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">Error</div>
+				</div>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+					<a class="btn btn-outline-secondary" th:href="@{${urlLista}}">Cancelar</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

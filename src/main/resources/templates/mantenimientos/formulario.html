@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Registrar mantenimiento')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('vehiculos')}"></nav>
+
+<main class="container pb-5">
+	<div class="card shadow-sm mx-auto" style="max-width: 36rem">
+		<div class="card-body p-4">
+			<h1 class="h3 mb-3">Registrar mantenimiento de <span th:text="${placa}">ABC-123</span></h1>
+
+			<form th:action="@{/vehiculos/{id}/mantenimientos(id=${vehiculoId})}" th:object="${form}" method="post">
+				<div class="alert alert-danger" role="alert" th:each="mensajeGlobal : ${#fields.globalErrors()}" th:text="${mensajeGlobal}">Error general</div>
+
+				<div class="mb-3">
+					<label for="fecha" class="form-label">Fecha del mantenimiento</label>
+					<input id="fecha" type="date" class="form-control" th:field="*{fecha}" th:errorclass="is-invalid" th:max="${hoy}" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('fecha')}" th:errors="*{fecha}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="kilometraje" class="form-label">Kilometraje al momento del mantenimiento</label>
+					<input id="kilometraje" type="number" class="form-control" min="0" step="1" th:field="*{kilometraje}" th:errorclass="is-invalid" required>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('kilometraje')}" th:errors="*{kilometraje}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="rutinaId" class="form-label">Rutina realizada</label>
+					<select id="rutinaId" class="form-select" th:field="*{rutinaId}" th:errorclass="is-invalid" required>
+						<option value="">Selecciona una rutina…</option>
+						<option th:each="r : ${rutinas}" th:value="${r.id().valor()}"
+						        th:text="${r.codigo().valor() + ' — ' + r.nombre()}">10K</option>
+					</select>
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('rutinaId')}" th:errors="*{rutinaId}">Error</div>
+				</div>
+
+				<div class="mb-3">
+					<label for="observaciones" class="form-label">Observaciones (opcional)</label>
+					<input id="observaciones" type="text" class="form-control" th:field="*{observaciones}" th:errorclass="is-invalid"
+					       maxlength="500" autocomplete="off">
+					<div class="invalid-feedback" th:if="${#fields.hasErrors('observaciones')}" th:errors="*{observaciones}">Error</div>
+				</div>
+
+				<div class="d-flex gap-2 mt-4">
+					<button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Guardar</button>
+					<a class="btn btn-outline-secondary" th:href="@{/vehiculos/{id}/mantenimientos(id=${vehiculoId})}">Cancelar</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</main>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
